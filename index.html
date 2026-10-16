@@ -1,0 +1,984 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MUZYE</title>
+  <meta name="description" content="Download videos from YouTube, TikTok, Instagram, X/Twitter, and 1,800+ sites in 480p, 1080p60, 2K, 4K 60FPS and MP3. Muzye terminal-inspired web downloader." />
+
+  <!-- ================================================================= -->
+  <!-- GOOGLE ADSENSE SCRIPT: Replace ca-pub-XXXXXXXXXXXXXXXX with yours -->
+  <!-- ================================================================= -->
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-XXXXXXXXXXXXXXXX" crossorigin="anonymous"></script>
+
+  <!-- JetBrains Mono Font for Authentic Yoinks Terminal Aesthetic -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <style>
+    :root[data-theme="dark"] {
+      --bg: #090b10;
+      --panel: #10141d;
+      --panel-alt: #161b26;
+      --border: #263042;
+      --border-active: #00f59b;
+      --text: #e6edf3;
+      --muted: #7d8590;
+      --accent: #00f59b;
+      --accent-dim: rgba(0, 245, 155, 0.12);
+      --cyan: #38bdf8;
+      --warning: #f59e0b;
+      --danger: #f43f5e;
+    }
+
+    :root[data-theme="light"] {
+      --bg: #f4f6f9;
+      --panel: #ffffff;
+      --panel-alt: #eef2f6;
+      --border: #cbd5e1;
+      --border-active: #059669;
+      --text: #0f172a;
+      --muted: #64748b;
+      --accent: #059669;
+      --accent-dim: rgba(5, 150, 105, 0.1);
+      --cyan: #0284c7;
+      --warning: #d97706;
+      --danger: #e11d48;
+    }
+
+    :root[data-theme="matrix"] {
+      --bg: #020804;
+      --panel: #051209;
+      --panel-alt: #091e10;
+      --border: #14532d;
+      --border-active: #22c55e;
+      --text: #4ade80;
+      --muted: #16a34a;
+      --accent: #22c55e;
+      --accent-dim: rgba(34, 197, 94, 0.15);
+      --cyan: #86efac;
+      --warning: #eab308;
+      --danger: #ef4444;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      font-family: 'JetBrains Mono', monospace;
+      line-height: 1.5;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 1.25rem;
+      background-image: radial-gradient(var(--border) 1px, transparent 1px);
+      background-size: 24px 24px;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 900px;
+    }
+
+    /* GOOGLE ADSENSE STYLING (Terminal Themed) */
+    .ad-container {
+      width: 100%;
+      background: var(--panel);
+      border: 1px dashed var(--border);
+      border-radius: 6px;
+      padding: 0.6rem;
+      margin-bottom: 1.25rem;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .ad-label {
+      font-size: 0.65rem;
+      color: var(--muted);
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      display: block;
+      margin-bottom: 0.3rem;
+    }
+
+    .ad-placeholder-box {
+      min-height: 80px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--panel-alt);
+      color: var(--muted);
+      font-size: 0.78rem;
+      border-radius: 4px;
+      padding: 0.5rem;
+    }
+
+    /* YOINKS TERMINAL WINDOW */
+    .tui-window {
+     /*  background: var(--panel);
+    border: 2px solid var(--border);*/
+      /* border-radius: 8px; */
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.45);
+      overflow: hidden;
+      margin-bottom: 1.5rem;
+    }
+
+    .tui-header {
+      /* background: var(--panel-alt);
+      border-bottom: 1px solid var(--border); */
+      padding: 0.75rem 1rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+
+    .tui-dots {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .dot {
+      width: 11px;
+      height: 11px;
+      border-radius: 50%;
+    }
+    .dot.red { background: #ff5f56; }
+    .dot.yellow { background: #ffbd2e; }
+    .dot.green { background: #27c93f; }
+
+    .tui-title {
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .tui-badge {
+      background: var(--accent-dim);
+      color: var(--accent);
+      border: 1px solid var(--accent);
+      font-size: 0.7rem;
+      padding: 0.1rem 0.45rem;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    .theme-btn {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--text);
+      font-family: inherit;
+      font-size: 0.75rem;
+      padding: 0.25rem 0.6rem;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: 0.15s;
+    }
+    .theme-btn:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    .tui-body {
+      padding: 1.5rem;
+    }
+
+    /* ASCII LOGO BANNER */
+    .ascii-hero {
+      text-align: center;
+      margin-bottom: 1.5rem;
+    }
+
+    .ascii-art {
+      font-size: clamp(0.52rem, 1.6vw, 0.82rem);
+      line-height: 1.15;
+      color: var(--accent);
+      font-weight: 800;
+      white-space: pre;
+      overflow-x: auto;
+      margin-bottom: 0.6rem;
+    }
+
+    .hero-sub {
+      font-size: 0.82rem;
+      color: var(--muted);
+    }
+
+    .hero-sub span {
+      color: var(--cyan);
+      font-weight: 600;
+    }
+
+    /* PLATFORM PILLS BAR */
+    .platform-bar {
+      display: flex;
+      flex-wrap: wrap;
+      /* gap: 0.45rem; */
+      justify-content: center;
+      margin-bottom: 1.5rem;
+    }
+
+    .plat-pill {
+      font-size: 0.72rem;
+      /* background: var(--panel-alt);
+      border: 1px solid var(--border); */
+      padding: 0.25rem 0.6rem;
+      border-radius: 4px;
+      color: white;
+    }
+.plat-pill p {
+  color: red;
+}
+    .plat-pill.highlight {
+      color: var(--accent);
+      border-color: var(--accent);
+      background: var(--accent-dim);
+      cursor: pointer;
+    }
+
+    /* TERMINAL URL INPUT BOX */
+    .prompt-box {
+      display: flex;
+      align-items: center;
+      background: var(--bg);
+      border: 2px solid var(--border);
+      border-radius: 6px;
+      padding: 0.4rem 0.6rem;
+      gap: 0.6rem;
+      transition: border-color 0.2s;
+    }
+
+    .prompt-box:focus-within {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px var(--accent-dim);
+    }
+
+    .prompt-symbol {
+      color: var(--accent);
+      font-weight: 800;
+      font-size: 1rem;
+      padding-left: 0.3rem;
+      user-select: none;
+    }
+
+    .url-input {
+      flex: 1;
+      background: transparent;
+      border: none;
+      outline: none;
+      color: var(--text);
+      font-family: inherit;
+      font-size: 0.92rem;
+      padding: 0.45rem 0;
+    }
+
+    .paste-btn, .yoink-btn {
+      font-family: inherit;
+      font-size: 0.8rem;
+      font-weight: 700;
+      padding: 0.55rem 0.95rem;
+      border-radius: 4px;
+      cursor: pointer;
+      border: 1px solid var(--border);
+      transition: 0.15s;
+    }
+
+    .paste-btn {
+      background: var(--panel-alt);
+      color: var(--text);
+    }
+    .paste-btn:hover {
+      border-color: var(--cyan);
+      color: var(--cyan);
+    }
+
+    .yoink-btn {
+      background: var(--accent);
+      color: #04120b;
+      border-color: var(--accent);
+    }
+    .yoink-btn:hover {
+      opacity: 0.9;
+      transform: translateY(-1px);
+    }
+    .yoink-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    /* STATUS / LOADER */
+    .terminal-log {
+      margin-top: 1rem;
+      font-size: 0.8rem;
+      color: var(--cyan);
+      display: none;
+      align-items: center;
+      gap: 0.5rem;
+      background: var(--panel-alt);
+      padding: 0.65rem 0.9rem;
+      border-left: 3px solid var(--cyan);
+      border-radius: 4px;
+    }
+
+    .error-log {
+      border-left-color: var(--danger);
+      color: var(--danger);
+    }
+
+    /* YOINKS INTERACTIVE FORMAT PICKER */
+    .result-section {
+      display: none;
+      margin-top: 1.5rem;
+      border-top: 1px dashed var(--border);
+      padding-top: 1.5rem;
+    }
+
+    .media-card {
+      display: grid;
+      grid-template-columns: 200px 1fr;
+      gap: 1rem;
+      background: var(--panel-alt);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 0.9rem;
+      margin-bottom: 1.25rem;
+    }
+
+    @media (max-width: 640px) {
+      .media-card {
+        grid-template-columns: 1fr;
+      }
+      .prompt-box {
+        flex-wrap: wrap;
+      }
+      .yoink-btn {
+        width: 100%;
+      }
+    }
+
+    .media-thumb {
+      width: 100%;
+      height: 115px;
+      object-fit: cover;
+      border-radius: 4px;
+      border: 1px solid var(--border);
+      background: #000;
+    }
+
+    .media-meta h2 {
+      font-size: 0.95rem;
+      margin-bottom: 0.4rem;
+      line-height: 1.35;
+      display: -webkit-box;
+      --webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    .meta-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      font-size: 0.74rem;
+      color: var(--muted);
+    }
+
+    .meta-tag {
+      background: var(--bg);
+      padding: 0.15rem 0.5rem;
+      border-radius: 4px;
+      border: 1px solid var(--border);
+    }
+
+    .meta-tag.plat {
+      color: var(--accent);
+      border-color: var(--accent);
+    }
+
+    .picker-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.78rem;
+      color: var(--muted);
+      margin-bottom: 0.6rem;
+    }
+
+    .format-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.45rem;
+    }
+
+    .format-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.7rem 0.95rem;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      cursor: pointer;
+      transition: 0.12s;
+    }
+
+    .format-row:hover, .format-row.selected {
+      border-color: var(--accent);
+      background: var(--accent-dim);
+    }
+
+    .format-left {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .cursor-arrow {
+      color: var(--accent);
+      font-weight: 800;
+      width: 16px;
+      opacity: 0;
+    }
+
+    .format-row.selected .cursor-arrow {
+      opacity: 1;
+    }
+
+    .format-name {
+      font-weight: 700;
+      font-size: 0.86rem;
+    }
+
+    .fps-badge {
+      font-size: 0.68rem;
+      padding: 0.12rem 0.45rem;
+      border-radius: 3px;
+      background: var(--panel-alt);
+      border: 1px solid var(--cyan);
+      color: var(--cyan);
+      font-weight: 700;
+    }
+
+    .format-right {
+      display: flex;
+      align-items: center;
+      gap: 0.85rem;
+      font-size: 0.78rem;
+      color: var(--muted);
+    }
+
+    .dl-action-btn {
+      margin-top: 1rem;
+      width: 100%;
+      padding: 0.85rem;
+      background: var(--accent);
+      color: #04120b;
+      border: none;
+      border-radius: 6px;
+      font-family: inherit;
+      font-size: 0.92rem;
+      font-weight: 800;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+    }
+
+    .dl-action-btn:hover {
+      opacity: 0.92;
+    }
+
+    /* FOOTER & SEO CONTENT FOR GOOGLE ADSENSE APPROVAL */
+    .tui-footer {
+      background: var(--panel-alt);
+      border-top: 1px solid var(--border);
+      padding: 0.65rem 1rem;
+      font-size: 0.72rem;
+      color: var(--muted);
+      display: flex;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+
+    .kbd {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      padding: 0.05rem 0.35rem;
+      border-radius: 3px;
+      color: var(--text);
+      font-size: 0.68rem;
+    }
+
+    .seo-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .seo-box {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 1rem;
+    }
+
+    .seo-box h3 {
+      font-size: 0.85rem;
+      color: var(--accent);
+      margin-bottom: 0.45rem;
+    }
+
+    .seo-box p {
+      font-size: 0.76rem;
+      color: var(--muted);
+    }
+
+    /* MODAL FOR 1800+ SITES */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.75);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+      z-index: 999;
+    }
+
+    .modal-card {
+      background: var(--panel);
+      border: 2px solid var(--accent);
+      border-radius: 8px;
+      width: 100%;
+      max-width: 600px;
+      max-height: 80vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .modal-body {
+      padding: 1rem;
+      overflow-y: auto;
+    }
+
+    .sites-cloud {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.35rem;
+      margin-top: 0.75rem;
+    }
+
+.container{
+    margin-left: 5%;
+    margin-right: 5%;
+}
+  </style>
+</head>
+<body>
+
+  <div class="container">
+
+    <!-- =============================================================== -->
+    <!-- GOOGLE ADSENSE SLOT #1: TOP LEADERBOARD BANNER (728x90 / Auto)  -->
+    <!-- =============================================================== -->
+    <div class="ad-container">
+      <span class="ad-label">// Sponsored Advertisement (Google AdSense)</span>
+      <ins class="adsbygoogle"
+           style="display:block"
+           data-ad-client="ca-pub-XXXXXXXXXXXXXXXX"
+           data-ad-slot="1111111111"
+           data-ad-format="auto"
+           data-full-width-responsive="true"></ins>
+      <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+      <div class="ad-placeholder-box">
+        [ Google AdSense Top Banner Slot — Active Once Publisher ID Is Added ]
+      </div>
+    </div>
+
+    <!-- =============================================================== -->
+    <!-- MAIN MUZYE TERMINAL INTERFACE                                  -->
+    <!-- =============================================================== -->
+    <main class="tui-window">
+      <header class="tui-header">
+        <div class="tui-dots">
+          <div class="tui-title" style="margin-left: 0.5rem;">
+            <span>Muzye</span>
+            <span class="tui-badge" id="sitesBadge" onclick="openSitesModal()">1,800+ Sites Supported ↗</span>
+          </div>
+        </div>
+      </header>
+      <div class="tui-body">
+        <div class="ascii-hero">
+<pre class="ascii-art">
+███╗   ███╗██╗   ██╗███████╗██╗   ██╗███████╗
+████╗ ████║██║   ██║╚══███╔╝╚██╗ ██╔╝██╔════╝
+██╔████╔██║██║   ██║  ███╔╝  ╚████╔╝ █████╗  
+██║╚██╔╝██║██║   ██║ ███╔╝    ╚██╔╝  ██╔══╝  
+██║ ╚═╝ ██║╚██████╔╝███████╗   ██║   ███████╗
+╚═╝     ╚═╝ ╚═════╝ ╚══════╝   ╚═╝   ╚══════╝
+</pre>
+          <p class="hero-sub">
+            Paste any link <span>480p • 1080p60 • 2K • 4K 60FPS • MP3</span>
+          </p>
+        </div>
+
+        <!-- Supported Platforms Quick Bar -->
+        <div class="platform-bar">
+          <span class="plat-pill">YouTube •</span>
+          <span class="plat-pill">TikTok •</span>
+          <span class="plat-pill">Instagram •</span>
+          <span class="plat-pill">X •</span>
+          <span class="plat-pill">Facebook •</span>
+          <span class="plat-pill">Threads •</span>
+          <span class="plat-pill">Reddit •</span>
+          <span class="plat-pill">Twitch •</span>
+          <span class="plat-pill"> <p> Adult Content 18+ • </p></span>
+          <span class="plat-pill highlight" onclick="openSitesModal()">+1,800 More Platforms </span>
+        </div>
+
+        <!-- URL Input Prompt -->
+        <form id="yoinkForm" onsubmit="fetchVideoInfo(event)">
+          <div class="prompt-box">
+            <span class="prompt-symbol">❯</span>
+            <input
+              type="url"
+              id="videoUrl"
+              class="url-input"
+              placeholder="https://www.youtube.com/watch?v=... or TikTok / Instagram / X link"
+              required
+              autocomplete="off"
+            />
+            <button type="button" class="paste-btn" onclick="pasteClipboard()">Paste</button>
+            <button type="submit" class="yoink-btn" id="fetchBtn">Search ⚡</button>
+          </div>
+        </form>
+
+        <!-- Terminal Status Bar -->
+        <div class="terminal-log" id="statusLog">
+          <span id="statusText">Scanning streams via yt-dlp engine...</span>
+        </div>
+
+        <!-- Interactive Format Picker Section -->
+        <section class="result-section" id="resultSection">
+          <div class="media-card">
+            <img src="" alt="Video Thumbnail" class="media-thumb" id="mediaThumb" />
+            <div class="media-meta">
+              <h2 id="mediaTitle">Video Title</h2>
+              <div class="meta-tags">
+                <span class="meta-tag plat" id="mediaPlatform">YOUTUBE</span>
+                <span class="meta-tag" id="mediaUploader">@channel</span>
+                <span class="meta-tag" id="mediaDuration">00:00</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- ========================================================= -->
+          <!-- GOOGLE ADSENSE SLOT #2: IN-FEED NATIVE AD                 -->
+          <!-- ========================================================= -->
+          <div class="ad-container" style="margin-bottom: 1rem;">
+            <span class="ad-label">// Sponsored In-Feed Ad</span>
+            <ins class="adsbygoogle"
+                 style="display:block"
+                 data-ad-client="ca-pub-XXXXXXXXXXXXXXXX"
+                 data-ad-slot="2222222222"
+                 data-ad-format="fluid"
+                 data-ad-layout-key="-fb+5w+4e-db+86"></ins>
+            <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+            <div class="ad-placeholder-box" style="min-height: 55px;">
+              [ Google AdSense In-Feed Native Unit — High CTR Placement ]
+            </div>
+          </div>
+
+          <div class="picker-header">
+            <span>SELECT FORMAT & RESOLUTION (Use ↑/↓ or Click)</span>   
+          </div>
+
+          <div class="format-list" id="formatList"></div>
+
+          <button type="button" class="dl-action-btn" id="downloadBtn" onclick="triggerDownload()">
+            <span>⬇ START DOWNLOAD (SELECTED FORMAT)</span>
+          </button>
+        </section>
+      </div>
+    </main>
+
+    <!-- =============================================================== -->
+    <!-- SEO & FEATURES SECTION (Important for Google AdSense Approval)  -->
+    <!-- =============================================================== -->
+    <section class="seo-grid">
+      <div class="seo-box">
+        <h3>⚡ True 2K & 4K 60FPS Merging</h3>
+        <p>Unlike basic downloaders that cap videos at 720p, Muzye Web merges separate high-bitrate video and audio streams on the fly using FFmpeg for crisp 1080p60, 1440p60 (2K), and 2160p60 (4K) MP4 output.</p>
+      </div>
+      <div class="seo-box">
+        <h3>🌐 1,800+ Supported Platforms</h3>
+        <p>Built on the universal yt-dlp extraction engine. Paste links from YouTube, TikTok, Instagram, Facebook, X (Twitter), Threads, Reddit, Vimeo, SoundCloud, Twitch, Dailymotion, and 1,800+ global sites.</p>
+      </div>
+      <div class="seo-box">
+        <h3>🎵 320kbps MP3 Audio Extraction</h3>
+        <p>Need just the audio track, podcast, or music? Choose the MP3 Audio preset in the interactive terminal picker to convert any video into high-bitrate MP3 audio immediately.</p>
+      </div>
+    </section>
+
+    <!-- =============================================================== -->
+    <!-- GOOGLE ADSENSE SLOT #3: FOOTER RESPONSIVE BANNER                -->
+    <!-- =============================================================== -->
+    <div class="ad-container">
+      <span class="ad-label">// Sponsored Advertisement</span>
+      <ins class="adsbygoogle"
+           style="display:block"
+           data-ad-client="ca-pub-XXXXXXXXXXXXXXXX"
+           data-ad-slot="3333333333"
+           data-ad-format="auto"
+           data-full-width-responsive="true"></ins>
+      <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+      <div class="ad-placeholder-box">
+        [ Google AdSense Footer Responsive Ad Unit ]
+      </div>
+    </div>
+
+  </div>
+
+  <!-- 1,800+ SUPPORTED SITES MODAL -->
+  <div class="modal-overlay" id="sitesModal" onclick="if(event.target===this) closeSitesModal()">
+    <div class="modal-card">
+      <div class="tui-header">
+        <span class="tui-title">🌐 Supported Extractors (<span id="modalSiteCount">1800+</span> Platforms)</span>
+        <button class="theme-btn" onclick="closeSitesModal()">ESC / Close ✕</button>
+      </div>
+      <div class="modal-body">
+        <input
+          type="text"
+          id="siteSearchInput"
+          class="url-input"
+          placeholder="Search platform (e.g. youtube, tiktok, instagram, bilibili...)"
+          style="width:100%; background:var(--bg); border:1px solid var(--border); padding:0.55rem; border-radius:4px; margin-bottom:0.5rem;"
+          oninput="filterSites()"
+        />
+        <div class="sites-cloud" id="sitesCloud">Loading extractors...</div>
+      </div>
+    </div>
+  </div>
+        <footer class="tui-footer">
+        <div>@ 2027 Muzye. All rights reserved.  </div>
+      </footer>
+  <script>
+    let currentTiers = [];
+    let selectedIndex = 2; // Default to 1080p60
+    let currentVideoUrl = '';
+    let currentVideoTitle = '';
+    let allExtractors = [];
+
+    const themes = ['dark', 'light', 'matrix'];
+    let themeIdx = 0;
+
+    function cycleTheme() {
+      themeIdx = (themeIdx + 1) % themes.length;
+      const next = themes[themeIdx];
+      document.documentElement.setAttribute('data-theme', next);
+      document.getElementById('themeBtn').textContent = `Theme: ${next.toUpperCase()} (^T)`;
+    }
+
+    async function pasteClipboard() {
+      try {
+        const text = await navigator.clipboard.readText();
+        if (text) {
+          document.getElementById('videoUrl').value = text;
+          document.getElementById('videoUrl').focus();
+        }
+      } catch (err) {
+        alert('Clipboard permission denied. Press Ctrl+V inside the box.');
+      }
+    }
+
+    function showStatus(msg, isError = false) {
+      const log = document.getElementById('statusLog');
+      const txt = document.getElementById('statusText');
+      log.style.display = 'flex';
+      log.className = isError ? 'terminal-log error-log' : 'terminal-log';
+      txt.textContent = msg;
+    }
+
+    async function fetchVideoInfo(e) {
+      e.preventDefault();
+      const urlInput = document.getElementById('videoUrl').value.trim();
+      if (!urlInput) return;
+
+      const btn = document.getElementById('fetchBtn');
+      btn.disabled = true;
+      btn.textContent = 'SCANNING...';
+      document.getElementById('resultSection').style.display = 'none';
+      showStatus('⚡ Running / Fetching Starting (this may take a few seconds)...');
+
+      try {
+        const res = await fetch('/api/info', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ url: urlInput })
+        });
+        const data = await res.json();
+
+        if (!res.ok || data.error) {
+          throw new Error(data.error || 'Failed to extract video.');
+        }
+
+        currentVideoUrl = urlInput;
+        currentVideoTitle = data.title;
+        currentTiers = data.tiers || [];
+        selectedIndex = 2; // Default highlight 1080p60
+
+        document.getElementById('mediaThumb').src = data.thumbnail || 'https://via.placeholder.com/320x180?text=Muzye+MEDIA';
+        document.getElementById('mediaTitle').textContent = data.title;
+        document.getElementById('mediaPlatform').textContent = data.platform;
+        document.getElementById('mediaUploader').textContent = data.uploader;
+        document.getElementById('mediaDuration').textContent = `⏱ ${data.duration}`;
+
+        renderFormatPicker();
+        document.getElementById('statusLog').style.display = 'none';
+        document.getElementById('resultSection').style.display = 'block';
+      } catch (err) {
+        showStatus(`✖ Error: ${err.message}`, true);
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Done IT ⚡';
+      }
+    }
+
+    function renderFormatPicker() {
+      const list = document.getElementById('formatList');
+      list.innerHTML = '';
+
+      currentTiers.forEach((tier, idx) => {
+        const row = document.createElement('div');
+        row.className = `format-row ${idx === selectedIndex ? 'selected' : ''}`;
+        row.onclick = () => {
+          selectedIndex = idx;
+          renderFormatPicker();
+        };
+
+        const fpsLabel = tier.fps && tier.fps >= 50 ? `${tier.fps}FPS` : tier.badge;
+
+        row.innerHTML = `
+          <div class="format-left">
+            <span class="cursor-arrow">❯</span>
+            <span class="format-name">[${idx + 1}] ${tier.label} (${tier.resolution})</span>
+            <span class="fps-badge">${fpsLabel}</span>
+          </div>
+          <div class="format-right">
+            <span>.${tier.ext.toUpperCase()}</span>
+            <span>~${tier.size}</span>
+          </div>
+        `;
+        list.appendChild(row);
+      });
+
+      const chosen = currentTiers[selectedIndex];
+      if (chosen) {
+        document.getElementById('downloadBtn').innerHTML =
+          `⬇ ${chosen.label.toUpperCase()} (${chosen.resolution}) • .${chosen.ext.toUpperCase()}`;
+      }
+    }
+
+    function triggerDownload() {
+      if (!currentVideoUrl || !currentTiers[selectedIndex]) return;
+      const chosen = currentTiers[selectedIndex];
+
+      showStatus(
+        `⚙ Merging & downloading ${chosen.label} (${chosen.resolution}) via FFmpeg... Your browser download will start automatically.`
+      );
+
+      const dlUrl = `/api/download?url=${encodeURIComponent(currentVideoUrl)}&tier=${encodeURIComponent(chosen.id)}&title=${encodeURIComponent(currentVideoTitle)}`;
+      window.location.href = dlUrl;
+    }
+
+    // Keyboard Shortcuts (Just like Yoinks CLI: Up/Down arrows, 1-6 keys, Ctrl+T theme)
+    window.addEventListener('keydown', (e) => {
+      if (e.ctrlKey && e.key.toLowerCase() === 't') {
+        e.preventDefault();
+        cycleTheme();
+        return;
+      }
+
+      if (document.getElementById('sitesModal').style.display === 'flex' && e.key === 'Escape') {
+        closeSitesModal();
+        return;
+      }
+
+      const resultVisible = document.getElementById('resultSection').style.display === 'block';
+      if (!resultVisible || document.activeElement.tagName === 'INPUT') return;
+
+      if (e.key === 'ArrowDown' || e.key === 'j') {
+        e.preventDefault();
+        selectedIndex = (selectedIndex + 1) % currentTiers.length;
+        renderFormatPicker();
+      } else if (e.key === 'ArrowUp' || e.key === 'k') {
+        e.preventDefault();
+        selectedIndex = (selectedIndex - 1 + currentTiers.length) % currentTiers.length;
+        renderFormatPicker();
+      } else if (e.key === 'Enter') {
+        e.preventDefault();
+        triggerDownload();
+      } else if (['1', '2', '3', '4', '5', '6'].includes(e.key)) {
+        const idx = parseInt(e.key, 10) - 1;
+        if (currentTiers[idx]) {
+          selectedIndex = idx;
+          renderFormatPicker();
+        }
+      }
+    });
+
+    // Load 1,800+ Supported Extractors List
+    async function loadExtractors() {
+      try {
+        const res = await fetch('/api/extractors');
+        const data = await res.json();
+        allExtractors = data.sample || [];
+        document.getElementById('sitesBadge').textContent = `${data.count}+ Sites Supported ↗`;
+        document.getElementById('modalSiteCount').textContent = data.count;
+        renderSitesCloud(allExtractors);
+      } catch (e) {}
+    }
+
+    function renderSitesCloud(list) {
+      const cloud = document.getElementById('sitesCloud');
+      cloud.innerHTML = list
+        .slice(0, 180)
+        .map((s) => `<span class="plat-pill">${s}</span>`)
+        .join('');
+    }
+
+    function filterSites() {
+      const q = document.getElementById('siteSearchInput').value.toLowerCase();
+      const filtered = allExtractors.filter((s) => s.toLowerCase().includes(q));
+      renderSitesCloud(filtered);
+    }
+
+    function openSitesModal() {
+      document.getElementById('sitesModal').style.display = 'flex';
+    }
+
+    function closeSitesModal() {
+      document.getElementById('sitesModal').style.display = 'none';
+    }
+
+    loadExtractors();
+  </script>
+</body>
+</html>
